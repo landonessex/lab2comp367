@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/landonessex/lab2comp367.git', branch: 'main'
+                git url: 'https://github.com/landonessex/lab2comp367.git', branch: 'main'
             }
         }
         stage('Build') {
