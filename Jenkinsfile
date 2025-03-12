@@ -1,20 +1,50 @@
 pipeline {
     agent any
-
+    
     tools {
-        maven 'Maven3'
+        maven 'Maven'
     }
-
+    
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+        DOCKER_IMAGE_NAME = 'landonessex/comp367'
+    }
+    
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/landonessex/lab2comp367.git', branch: 'main'
+                checkout scm
             }
         }
-        stage('Build') {
+        
+        stage('Build Maven Project') {
             steps {
-                sh 'mvn clean package'
+                sh '${MAVEN_HOME}/bin/mvn clean package'
             }
+        }
+        
+        stage('Docker Login') {
+            steps {
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+            }
+        }
+        
+        stage('Docker Build') {
+            steps {
+                sh "docker build -t ${DOCKER_IMAGE_NAME}:latest ."
+            }
+        }
+        
+        stage('Docker Push') {
+            steps {
+                sh "docker push ${DOCKER_IMAGE_NAME}:latest"
+            }
+        }
+    }
+    
+    post {
+        always {
+            sh 'docker logout'
         }
     }
 }
